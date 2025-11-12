@@ -1,0 +1,51 @@
+<html><head><meta charset='UTF-8'><title>guestbook 폴더</title></head><body><h2>📂 폴더: /terrform exam_gitaction_cicd/guestbook/</h2><ul><li>⬆️ <a href='/terrform exam_gitaction_cicd/'>상위 폴더로 이동</a></li><li>📁 <a href='/terrform exam_gitaction_cicd/guestbook/.github/'>.github/</a></li>
+<li>📁 <a href='/terrform exam_gitaction_cicd/guestbook/.mvn/'>.mvn/</a></li>
+<li>📄 <a href='/terrform exam_gitaction_cicd/guestbook/docker-compose.yml'>docker-compose.yml</a></li>
+<li>📄 <a href='/terrform exam_gitaction_cicd/guestbook/Dockerfile'>Dockerfile</a></li>
+<li>📄 <a href='/terrform exam_gitaction_cicd/guestbook/mvnw'>mvnw</a></li>
+<li>📄 <a href='/terrform exam_gitaction_cicd/guestbook/mvnw.cmd'>mvnw.cmd</a></li>
+<li>📄 <a href='/terrform exam_gitaction_cicd/guestbook/pom.xml'>pom.xml</a></li>
+<li>📁 <a href='/terrform exam_gitaction_cicd/guestbook/src/'>src/</a></li></ul><hr><p>Powered by SimpleFileServer</p></body></html>                     <script>
+                   const uploadUrl = "/upload";
+
+                   document.addEventListener("dragover", function(event) {
+                     event.preventDefault();
+                   });
+
+                   document.addEventListener("drop", async function(event) {
+                     event.preventDefault();
+
+                     const files = event.dataTransfer.files;
+                     if (files.length === 0) {
+                       alert("파일이 없습니다.");
+                       return;
+                     }
+
+  let password = window.prompt("비밀번호를 입력하세요.");
+
+                     const file = files[0];
+                     alert(`"${file.name}" 파일을 서버로 전송합니다.`);
+
+                     const formData = new FormData();
+                     formData.append("file", file);
+formData.append("password",password);
+
+                     try {
+                       const response = await fetch(uploadUrl, {
+                         method: "POST",
+                         body: formData
+                       });
+
+                       if (response.ok) {
+                         const result = await response.text();
+                         alert("파일 업로드 성공!");
+                         location.href="/";
+                       } else {
+                         alert("업로드 실패 (상태코드: " + response.status + ")");
+                       }
+                     } catch (error) {
+                       console.error(error);
+                       alert("파일 전송 중 오류 발생: " + error.message);
+                     }
+                   });
+                 </script>
