@@ -1,4 +1,4 @@
-name: Deploy to EC2 (Amazon Linux, root)
+name: Deploy to EC2 (Amazon Linux, ubuntu)
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest   # GitHub Actions 기본 실행 환경 (변경 불가)
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout source
@@ -40,19 +40,34 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            echo "==== [0] Docker 및 Docker Compose 설치 확인 ===="
+            if ! command -v docker &> /dev/null; then
+              echo "Docker 설치 중..."
+              sudo yum update -y
+              sudo amazon-linux-extras enable docker
+              sudo yum install -y docker
+              sudo service docker start
+              sudo usermod -aG docker ubuntu
+            fi
+            if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
+              echo "Docker Compose 설치 중..."
+              sudo curl -L "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+            fi
+
             echo "==== [1] 이동 및 최신 코드 반영 ===="
-            cd /${{ secrets.EC_USER }}/guestbook-docker-app || mkdir -p /${{ secrets.EC_USER }}/guestbook-docker-app && cd /${{ secrets.EC_USER }}/guestbook-docker-app
+            APP_DIR="/home/ubuntu/guestbook-docker-app"
+            mkdir -p $APP_DIR
+            cd $APP_DIR
 
             echo "==== [2] docker-compose.yml 업데이트 ===="
-            # GitHub 저장소에서 최신 docker-compose.yml을 가져오려면 다음 줄을 유지:
-            # (만약 EC2 내에서 수동 관리한다면 이 부분 제거 가능)
             curl -O https://raw.githubusercontent.com/${{ github.repository }}/main/docker-compose.yml
 
-            echo "==== [3] 컨테이너 재시작 [문법주의]===="
+            echo "==== [3] 컨테이너 재시작 ===="
             docker login -u '${{ secrets.DOCKERHUB_USERNAME }}' -p '${{ secrets.DOCKERHUB_TOKEN }}'
-            docker-compose down
-            docker-compose pull
-            docker-compose up -d
+            docker compose down
+            docker compose pull
+            docker compose up -d
 
             echo "==== [4] 현재 실행 중 컨테이너 ===="
             docker ps -a
